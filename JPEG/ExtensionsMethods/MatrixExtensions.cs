@@ -20,6 +20,10 @@ namespace JPEG.ExtensionsMethods
 
         public static void SetSubmatrix<T>(this T[,] destination, T[,] source, int yOffset, int xOffset)
         {
+            if(yOffset < 0 || xOffset < 0)
+                throw new Exception("Received a negative bias");
+            if(yOffset+source.Length > destination.Length || xOffset+source.Length > destination.Length)
+                throw new Exception("Output sub-matrix of matrix");
             var height = source.GetLength(0);
             var width = source.GetLength(1);
             for (var y = 0; y < height; y++)
@@ -29,6 +33,12 @@ namespace JPEG.ExtensionsMethods
 
         public static T[,] GetSubMatrix<T>(this T[,] array, int yOffset, int yLength, int xOffset, int xLength)
         {
+            if(xLength < 0 || yLength < 0)
+                throw new Exception("Received a negative length");
+            if(yOffset < 0 || xOffset < 0)
+                throw new Exception("Received a negative bias");
+            if(yOffset+yLength > array.Length || xOffset+xLength > array.Length)
+                throw new Exception("Output sub-matrix of matrix");
             var result = new T[yLength, xLength];
             for (var j = 0; j < yLength; j++)
                 for (var i = 0; i < xLength; i++)
@@ -36,15 +46,15 @@ namespace JPEG.ExtensionsMethods
             return result;
         }
 
-        public static T[][,] DevideIntoBlocks<T>(this T[,] matrix, int xOffset, int yOffset)
-        {
+        public static T[][,] DevideIntoBlocks<T>(this T[,] matrix, int xLengthBlock, int yLengthBlock)
+        {   
             var height = matrix.GetLength(0);
             var width = matrix.GetLength(1);
             var result = new List<T[,]>();
-            for (var y = 0; y < height; y += yOffset)
-                for (var x = 0; x < width; x += xOffset)
+            for (var y = 0; y < height; y += yLengthBlock)
+                for (var x = 0; x < width; x += xLengthBlock)
                 {
-                    var subMatrix = matrix.GetSubMatrix(y, yOffset, x, xOffset);
+                    var subMatrix = matrix.GetSubMatrix(y, yLengthBlock, x, xLengthBlock);
                     result.Add(subMatrix);
                 }
             return result.ToArray();

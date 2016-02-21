@@ -32,7 +32,7 @@ namespace JPEG
 
             //try
             //{
-            const int thinIndex = 1;
+            const int thinIndex = 2;
             var countSaveFrequence = PercentToCountFrequence(options.PercentCompress, options.Dct);
             var kernelApplication = new StandardKernel(new ApplicationModule(options.Dct, countSaveFrequence, thinIndex));
             if (options.PathCompressFile != null)

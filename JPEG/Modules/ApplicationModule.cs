@@ -38,8 +38,9 @@ namespace JPEG.Modules
             Bind(typeof (IChannelsPacker<>)).To<YCbCrChannelsPacker>();
             Bind<IDctDecompressor>().To<DctDecompressor>();
             Bind<IDctCompressor>().To<DctCompressor>();
-            Bind(typeof (IMatrixExtender<>)).To(typeof(DuplicateMatrixExtender<>));
+            Bind(typeof (IPieceMatrixExtender<>)).To(typeof(DuplicatePieceMatrixExtender<>));
             Bind(typeof (IMatrixThinner<>)).To(typeof (AvgMatrixThinner));
+            Bind<IMatrixExtender>().To<LastValueMatrixExtender>();
         }
     }
 }

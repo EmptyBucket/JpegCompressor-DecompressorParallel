@@ -94,8 +94,10 @@
     <Compile Include="CompressionAlgorithms\DCT.cs" />
     <Compile Include="BitmapBuild\BitmapBuilder.cs" />
     <Compile Include="BitmapBuild\IBitmapBuilder.cs" />
-    <Compile Include="MatrixExtend\DuplicateMatrixExtender.cs" />
+    <Compile Include="MatrixExtend\LastValueMatrixExtender.cs" />
     <Compile Include="MatrixExtend\IMatrixExtender.cs" />
+    <Compile Include="PieceMatrixExtend\DuplicatePieceMatrixExtender.cs" />
+    <Compile Include="PieceMatrixExtend\IPieceMatrixExtender.cs" />
     <Compile Include="ExtensionsMethods\BitsCountConverter.cs" />
     <Compile Include="ExtensionsMethods\MatrixExtensions.cs" />
     <Compile Include="ChannelPack\IChannelsPacker.cs" />

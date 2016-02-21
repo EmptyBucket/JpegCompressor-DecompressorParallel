@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
 using JPEG.ChannelExtract;
 using JPEG.DctCompress;
+using JPEG.MatrixExtend;
 using JPEG.MatrixThin;
 using JPEG.Pixel;
 using JPEG.PixelsExtract;
@@ -20,13 +20,15 @@ namespace JPEG.JpegCompress
         private readonly IChannelsExtractor<YCbCrChannels> _channelExtractor;
         private readonly IDctCompressor _dctCompressor;
         private readonly IPixelsExtractor<RgbPixel> _pixelsExtractor;
+        private readonly IMatrixExtender _matrixExtender;
 
-        public JpegCompressor(IDctCompressor dctCompressor, IPixelsExtractor<RgbPixel> pixelsExtractor, IChannelsExtractor<YCbCrChannels> channelExtractor, IMatrixThinner<double> matrixThinner, int thinIndex, int compressionLevel, int dctSize)
+        public JpegCompressor(IDctCompressor dctCompressor, IPixelsExtractor<RgbPixel> pixelsExtractor, IChannelsExtractor<YCbCrChannels> channelExtractor, IMatrixThinner<double> matrixThinner, int thinIndex, int compressionLevel, int dctSize, IMatrixExtender matrixExtender)
         {
             _matrixThinner = matrixThinner; 
             _thinIndex = thinIndex;
             _compressionLevel = compressionLevel;
             _dctSize = dctSize;
+            _matrixExtender = matrixExtender;
             _channelExtractor = channelExtractor;
             _dctCompressor = dctCompressor;
             _pixelsExtractor = pixelsExtractor;
@@ -35,13 +37,14 @@ namespace JPEG.JpegCompress
         public CompressedImage Compress(Bitmap bmp)
         {
             if (bmp.PixelFormat != PixelFormat.Format24bppRgb)
-                throw new Exception("Формат пикселей изображения не поддерживается");
-            if (bmp.Width % _dctSize != 0 || bmp.Height % _dctSize != 0)
-                throw new Exception($"Image width and height must be multiple of {_dctSize}");
-
+                throw new Exception($"{bmp.PixelFormat} pixel format is not supported, supported rgb24");
             var pixels = _pixelsExtractor.Extract(bmp);
             var convertedPixels = MatrixRgbToYCbCrConveter.Convert(pixels);
-            var channels = _channelExtractor.Extract(convertedPixels);
+            var residueY = bmp.Height%(_thinIndex*_dctSize);
+            var residueX = bmp.Width%(_thinIndex*_dctSize);
+            var extendedPixelsMatrix = _matrixExtender.Extend(convertedPixels, residueY == 0 ? 0 : _thinIndex*_dctSize - residueY, residueX == 0 ? 0 : _thinIndex*_dctSize - residueX);
+
+            var channels = _channelExtractor.Extract(extendedPixelsMatrix);
             var thinnedCrChannel = _matrixThinner.Thin(channels.CrChannel, _thinIndex);
             var thinnedCbChannel = _matrixThinner.Thin(channels.CbChannel, _thinIndex);
 
@@ -51,12 +54,10 @@ namespace JPEG.JpegCompress
 
             var result = new List<double>();
             var notThinnedStep = _thinIndex * _thinIndex;
-            for (int i = 0, thinI = 0; i < yDct.Length; i += notThinnedStep, thinI++)
+            for (int i = 0, thinI = 0; i < yDct.Length; thinI++)
             {
-                result.AddRange(yDct.Skip(i)
-                                    .Take(notThinnedStep)
-                                    .Aggregate(new List<double>(),
-                                    (list, doubles) => list.Concat(doubles).ToList()));
+                for (var j = 0; j < notThinnedStep; j++)
+                    result.AddRange(yDct[i++]);
                 result.AddRange(cbDct[thinI]);
                 result.AddRange(crDct[thinI]);
             }
@@ -66,8 +67,8 @@ namespace JPEG.JpegCompress
                 ThinIndex = _thinIndex,
                 CompressionLevel = _compressionLevel,
                 Frequences = result,
-                Height = bmp.Height,
-                Width = bmp.Width
+                Height = extendedPixelsMatrix.GetLength(0),
+                Width = extendedPixelsMatrix.GetLength(1)
             };
             return compressedImage;
         }

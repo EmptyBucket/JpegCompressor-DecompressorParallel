@@ -6,6 +6,8 @@ namespace JPEG.DctDecompress
 {
     public class DctDecompressor : IDctDecompressor
     {
+        private const int ShiftIndes = 128;
+
         public double[,] Decompress(double[][] blocks, int dctSize, int imageHeight, int imageWidth)
         {
             var matrix = blocks
@@ -14,7 +16,7 @@ namespace JPEG.DctDecompress
                                         .Concat(Enumerable.Repeat(default(double), dctSize * dctSize - block.Length))
                                         .ToArray()
                                         .MatrixZigZagTurn(dctSize, dctSize))
-                                    .ShiftMatrixValues(128))
+                                    .ShiftMatrixValues(ShiftIndes))
                                     .ToArray()
                 .MatrixBuildFromBlocks(imageHeight, imageWidth);
             return matrix;

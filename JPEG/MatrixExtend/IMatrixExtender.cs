@@ -1,7 +1,7 @@
 ﻿namespace JPEG.MatrixExtend
 {
-    public interface IMatrixExtender<T>
+    public interface IMatrixExtender
     {
-        T[,] Extend(T[,] matrix, int extendIndex);
+        T[,] Extend<T>(T[,] matrix, int yExtend, int xExtend);
     }
 }

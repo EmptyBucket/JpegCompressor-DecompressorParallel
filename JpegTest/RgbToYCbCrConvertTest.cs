@@ -6,7 +6,6 @@ using JPEG.ChannelExtract;
 using JPEG.ChannelPack;
 using JPEG.DctCompress;
 using JPEG.DctDecompress;
-using JPEG.MatrixExtend;
 using JPEG.Pixel;
 using JPEG.PixelsExtract;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -78,7 +77,7 @@ namespace JpegTest
             var channelExtractor = new YCbCrChannelsExtractor();
             const int dctSize = 8;
             const int thinIndex = 1;
-            const int compressionLevel = dctSize*dctSize;
+            const int compressionLevel = 12;
             var pixels = pixelsExtractor.Extract(bmp);
             var convertedPixels = MatrixRgbToYCbCrConveter.Convert(pixels);
             var channels = channelExtractor.Extract(convertedPixels);
@@ -87,35 +86,29 @@ namespace JpegTest
             var crDct = dctCompressor.Compress(channels.CrChannel, dctSize, compressionLevel);
             var result = new List<double>();
             const int notThinnedStep = thinIndex * thinIndex;
-            for (int i = 0, thinI = 0; i < yDct.Length; i += notThinnedStep, thinI++)
+            for (int i = 0, thinI = 0; i < yDct.Length; thinI++)
             {
-                result.AddRange(yDct.Skip(i)
-                                    .Take(notThinnedStep)
-                                    .Aggregate(new List<double>(),
-                                    (list, doubles) => list.Concat(doubles).ToList()));
-                result.AddRange(cbDct[thinI]);//неправильный порядок
+                for (var j = 0; j < notThinnedStep; j++)
+                    result.AddRange(yDct[i++]);
+                result.AddRange(cbDct[thinI]);
                 result.AddRange(crDct[thinI]);
             }
 
             var dctDecompressor = new DctDecompressor();
             var channelPacker = new YCbCrChannelsPacker();
-            var matrixExtender = new DuplicateMatrixExtender<double>();
             var yDctDecompress = new List<double>();
             var cbDctDecompress = new List<double>();
             var crDctDecompress = new List<double>();
-            const int countYBlock = thinIndex*thinIndex;
-            const int cellsToBlock = dctSize*dctSize;
+            const int countYBlocks = thinIndex*thinIndex;
+            const int cellsToBlock = compressionLevel;
             for (var i = 0; i < result.Count;)
-            {//брать боками, а не поштучно
-                for (var j = 0; j < countYBlock; j++)
-                {
-                    yDctDecompress.AddRange(result.Skip(i).Take(cellsToBlock));   
-                    i += cellsToBlock;
-                }
-                cbDctDecompress.AddRange(result.Skip(i).Take(cellsToBlock));
-                i += cellsToBlock;
-                crDctDecompress.AddRange(result.Skip(i).Take(cellsToBlock));
-                i += cellsToBlock;
+            {
+                for (var j = 0; j < countYBlocks*cellsToBlock; j++)
+                    yDctDecompress.Add(result[i++]);
+                for (var j = 0; j < cellsToBlock; j++)
+                    cbDctDecompress.Add(result[i++]);
+                for (var j = 0; j < cellsToBlock; j++)
+                    crDctDecompress.Add(result[i++]);
             }
             var yDctBlocks = DevideBlocks(yDctDecompress, compressionLevel);
             var cbDctBlocks = DevideBlocks(cbDctDecompress, compressionLevel);
