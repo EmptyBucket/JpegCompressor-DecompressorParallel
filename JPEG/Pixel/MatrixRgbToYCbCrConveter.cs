@@ -2,7 +2,7 @@
 {
     public static class MatrixRgbToYCbCrConveter
     {
-        public static YCbCrPixel[,] MatrixRgbToYCbCr(RgbPixel[,] matrix)
+        public static YCbCrPixel[,] Convert(RgbPixel[,] matrix)
         {
             var height = matrix.GetLength(0);
             var width = matrix.GetLength(1);

@@ -39,17 +39,19 @@ namespace JPEG.JpegDecompress
             var yDct = new List<double>();
             var cbDct = new List<double>();
             var crDct = new List<double>();
-            var countY = compressedImage.ThinIndex*compressedImage.ThinIndex;
-            var countFrequences = compressedImage.Frequences.Count;
-            for (var i = 0; i < countFrequences;)
+            var countYBlocks = compressedImage.ThinIndex*compressedImage.ThinIndex;
+            var cellsToBlock = _dctSize*_dctSize;
+            for (var i = 0; i < compressedImage.Frequences.Count;)
             {
-                for (var j = 0; j < countY; j++)
-                    yDct.Add(compressedImage.Frequences[i + j]);
-                i += countY;
-                var cbChannelTemp = compressedImage.Frequences[i++];
-                cbDct.Add(cbChannelTemp);
-                var crChannelTemp = compressedImage.Frequences[i++];
-                crDct.Add(crChannelTemp);
+                 for (var j = 0; j < countYBlocks; j++)
+                {
+                    yDct.AddRange(compressedImage.Frequences.Skip(i).Take(cellsToBlock));   
+                    i += cellsToBlock;
+                }
+                cbDct.AddRange(compressedImage.Frequences.Skip(i).Take(cellsToBlock));
+                i += cellsToBlock;
+                crDct.AddRange(compressedImage.Frequences.Skip(i).Take(cellsToBlock));
+                i += cellsToBlock;
             }
 
             var yDctBlocks = DevideBlocks(yDct, compressedImage.CompressionLevel);

@@ -40,7 +40,7 @@ namespace JPEG.JpegCompress
                 throw new Exception($"Image width and height must be multiple of {_dctSize}");
 
             var pixels = _pixelsExtractor.Extract(bmp);
-            var convertedPixels = MatrixRgbToYCbCrConveter.MatrixRgbToYCbCr(pixels);
+            var convertedPixels = MatrixRgbToYCbCrConveter.Convert(pixels);
             var channels = _channelExtractor.Extract(convertedPixels);
             var thinnedCrChannel = _matrixThinner.Thin(channels.CrChannel, _thinIndex);
             var thinnedCbChannel = _matrixThinner.Thin(channels.CbChannel, _thinIndex);
@@ -57,8 +57,8 @@ namespace JPEG.JpegCompress
                                     .Take(notThinnedStep)
                                     .Aggregate(new List<double>(),
                                     (list, doubles) => list.Concat(doubles).ToList()));
-                result.AddRange(crDct[thinI]);
                 result.AddRange(cbDct[thinI]);
+                result.AddRange(crDct[thinI]);
             }
 
             var compressedImage = new CompressedImage

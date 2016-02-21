@@ -2,11 +2,11 @@
 {
     public class YCbCrPixel
     {
-        public YCbCrPixel(double y, double cr, double cb)
+        public YCbCrPixel(double y, double cb, double cr)
         {
             Y = y;
-            Cr = cr;
             Cb = cb;
+            Cr = cr;
         }
 
         public double Y { get; }
