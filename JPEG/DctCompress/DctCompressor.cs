@@ -2,6 +2,7 @@
 using System.Linq;
 using JPEG.CompressionAlgorithms;
 using JPEG.ExtensionsMethods;
+using JPEG.MatrixToArrayTransform;
 using JPEG.Quantification;
 
 namespace JPEG.DctCompress
@@ -9,11 +10,13 @@ namespace JPEG.DctCompress
     public class DctCompressor : IDctCompressor
     {
         private readonly IQuantifier _quantifier;
+        private readonly IMatrixToArrayTransformer _matrixToArrayTransformer;
         private const int ShiftIndex = 128;
 
-        public DctCompressor(IQuantifier quantifier)
+        public DctCompressor(IQuantifier quantifier, IMatrixToArrayTransformer matrixToArrayTransformer)
         {
             _quantifier = quantifier;
+            _matrixToArrayTransformer = matrixToArrayTransformer;
         }
 
         public byte[][] Compress(double[,] matrix, int dctSize, int compressionLevel, double[,] matrixQuantification)
@@ -25,8 +28,8 @@ namespace JPEG.DctCompress
                 {
                     var dctMatrix = Dct.Dct2D(block);
                     var quantificationMatrix = _quantifier.Quantification(dctMatrix, matrixQuantification);
-                    var blockShiftValue = quantificationMatrix
-                        .MatrixZigZagExpand()
+                    var transformedMatrix = _matrixToArrayTransformer.Transform(quantificationMatrix);
+                    var blockShiftValue = transformedMatrix
                         .Take(compressionLevel)
                         .Select(shiftBlock => (byte)Math.Round(shiftBlock))
                         .ToArray()

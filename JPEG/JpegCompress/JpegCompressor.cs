@@ -10,6 +10,7 @@ using JPEG.MatrixExtend;
 using JPEG.MatrixThin;
 using JPEG.Pixel;
 using JPEG.PixelsExtract;
+using JPEG.QuantificationMatrixProvide;
 using NUnit.Framework.Compatibility;
 
 namespace JPEG.JpegCompress
@@ -24,18 +25,18 @@ namespace JPEG.JpegCompress
         private readonly IDctCompressor _dctCompressor;
         private readonly IPixelsExtractor<RgbPixel> _pixelsExtractor;
         private readonly IMatrixExtender _matrixExtender;
-        private readonly double[,] _colorMatrixQuantification;
-        private readonly double[,] _lumiaMatrixQuantification;
+        private readonly IMatrixProvider<double> _lumiaMatrixProvider;
+        private readonly IMatrixProvider<double> _colorMatrixProvider;
 
-        public JpegCompressor(IDctCompressor dctCompressor, IPixelsExtractor<RgbPixel> pixelsExtractor, IChannelsExtractor<YCbCrChannels, YCbCrPixel> channelExtractor, IMatrixThinner<double> matrixThinner, int thinIndex, int compressionLevel, int dctSize, IMatrixExtender matrixExtender, double[,] lumiaMatrixQuantification, double[,] colorMatrixQuantification)
+        public JpegCompressor(IDctCompressor dctCompressor, IPixelsExtractor<RgbPixel> pixelsExtractor, IChannelsExtractor<YCbCrChannels, YCbCrPixel> channelExtractor, IMatrixThinner<double> matrixThinner, int thinIndex, int compressionLevel, int dctSize, IMatrixExtender matrixExtender, IMatrixProvider<double> lumiaMatrixProvider, IMatrixProvider<double> colorMatrixProvider)
         {
             _matrixThinner = matrixThinner; 
             _thinIndex = thinIndex;
             _compressionLevel = compressionLevel;
             _dctSize = dctSize;
             _matrixExtender = matrixExtender;
-            _colorMatrixQuantification = colorMatrixQuantification;
-            _lumiaMatrixQuantification = lumiaMatrixQuantification;
+            _lumiaMatrixProvider = lumiaMatrixProvider;
+            _colorMatrixProvider = colorMatrixProvider;
             _channelExtractor = channelExtractor;
             _dctCompressor = dctCompressor;
             _pixelsExtractor = pixelsExtractor;
@@ -57,9 +58,9 @@ namespace JPEG.JpegCompress
             var thinnedCbChannel = _matrixThinner.Thin(yCbCrchannels.CbChannel, _thinIndex);
             var thinnedCrChannel = _matrixThinner.Thin(yCbCrchannels.CrChannel, _thinIndex);
 
-            var dctYPieces = _dctCompressor.Compress(yCbCrchannels.YChannel, _dctSize, _compressionLevel, _lumiaMatrixQuantification);
-            var dctCbPieces = _dctCompressor.Compress(thinnedCbChannel, _dctSize, _compressionLevel, _colorMatrixQuantification);
-            var dctCrPieces = _dctCompressor.Compress(thinnedCrChannel, _dctSize, _compressionLevel, _colorMatrixQuantification);
+            var dctYPieces = _dctCompressor.Compress(yCbCrchannels.YChannel, _dctSize, _compressionLevel, _lumiaMatrixProvider.GetMatrix());
+            var dctCbPieces = _dctCompressor.Compress(thinnedCbChannel, _dctSize, _compressionLevel, _colorMatrixProvider.GetMatrix());
+            var dctCrPieces = _dctCompressor.Compress(thinnedCrChannel, _dctSize, _compressionLevel, _colorMatrixProvider.GetMatrix());
 
             var result = new List<byte>();
             var countYBlocksPerColorBlock = _thinIndex * _thinIndex;

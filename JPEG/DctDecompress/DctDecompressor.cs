@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JPEG.ArrayToMatrixBuilder;
 using JPEG.CompressionAlgorithms;
 using JPEG.ExtensionsMethods;
+using JPEG.MatrixToArrayTransform;
 using JPEG.Quantification;
 
 namespace JPEG.DctDecompress
@@ -9,11 +11,13 @@ namespace JPEG.DctDecompress
     public class DctDecompressor : IDctDecompressor
     {
         private readonly IQuantifier _quantifier;
+        private readonly IArrayToMatrixBuilder _arrayToMatrixBuilder;
         private const int ShiftIndex = -128;
 
-        public DctDecompressor(IQuantifier quantifier)
+        public DctDecompressor(IQuantifier quantifier, IArrayToMatrixBuilder arrayToMatrixBuilder)
         {
             _quantifier = quantifier;
+            _arrayToMatrixBuilder = arrayToMatrixBuilder;
         }
 
         private static T[] AdditionBlock<T>(IReadOnlyCollection<T> block, int countAddValue) => block
@@ -28,7 +32,7 @@ namespace JPEG.DctDecompress
                 {
                     var blockShiftValue = block.ShiftArrayValue(ShiftIndex);
                     var additionBlock = AdditionBlock(blockShiftValue, dctSize*dctSize - block.Length);
-                    var matrix = additionBlock.MatrixZigZagTurn(dctSize, dctSize);
+                    var matrix = _arrayToMatrixBuilder.Build(additionBlock, dctSize, dctSize);
                     var unQuantifiedMatrix = _quantifier.UnQuantification(matrix, matrixQuantification);
                     var unDctMatrix = Dct.Idct2D(unQuantifiedMatrix);
                     return unDctMatrix;

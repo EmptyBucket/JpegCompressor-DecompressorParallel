@@ -6,9 +6,9 @@ using JPEG.ChannelExtract;
 using JPEG.ChannelPack;
 using JPEG.CompressionAlgorithms;
 using JPEG.DctDecompress;
-using JPEG.MatrixExtend;
 using JPEG.PieceMatrixExtend;
 using JPEG.Pixel;
+using JPEG.QuantificationMatrixProvide;
 
 namespace JPEG.JpegDecompress
 {
@@ -16,18 +16,18 @@ namespace JPEG.JpegDecompress
     {
         private readonly IDctDecompressor _dctDecompressor;
         private readonly int _dctSize;
-        private readonly double[,] _lumiaMatrixQuantification;
-        private readonly double[,] _colorMatrixQuantification;
         private readonly IPieceMatrixExtender<double> _pieceMatrixExtender;
         private readonly IChannelsPacker<YCbCrChannels, YCbCrPixel> _iChannelsPacker;
         private readonly IBitmapBuilder _bitmapBuilder;
+        private readonly IMatrixProvider<double> _lumiaMatrixProvider;
+        private readonly IMatrixProvider<double> _colorMatrixProvider;
 
-        public  JpegDecompressor(IDctDecompressor dctDecompressor, IBitmapBuilder bitmapBuilder, IChannelsPacker<YCbCrChannels, YCbCrPixel> iChannelsPacker, IPieceMatrixExtender<double> pieceMatrixExtender, int dctSize, double[,] lumiaMatrixQuantification, double[,] colorMatrixQuantification)
+        public  JpegDecompressor(IDctDecompressor dctDecompressor, IBitmapBuilder bitmapBuilder, IChannelsPacker<YCbCrChannels, YCbCrPixel> iChannelsPacker, IPieceMatrixExtender<double> pieceMatrixExtender, int dctSize, IMatrixProvider<double> lumiaMatrixProvider, IMatrixProvider<double> colorMatrixProvider)
         {
             _dctDecompressor = dctDecompressor;
             _dctSize = dctSize;
-            _lumiaMatrixQuantification = lumiaMatrixQuantification;
-            _colorMatrixQuantification = colorMatrixQuantification;
+            _lumiaMatrixProvider = lumiaMatrixProvider;
+            _colorMatrixProvider = colorMatrixProvider;
             _pieceMatrixExtender = pieceMatrixExtender;
             _iChannelsPacker = iChannelsPacker;
             _bitmapBuilder = bitmapBuilder;
@@ -63,9 +63,9 @@ namespace JPEG.JpegDecompress
             var yDctBlocks = DevideIntoPiece(yDct, compressedImage.CompressionLevel);
             var cbDctBlocks = DevideIntoPiece(cbDct, compressedImage.CompressionLevel);
             var crDctBlocks = DevideIntoPiece(crDct, compressedImage.CompressionLevel);
-            var yChannel = _dctDecompressor.Decompress(yDctBlocks, _dctSize, compressedImage.Height, compressedImage.Width, _lumiaMatrixQuantification);
-            var thinnedCbChannel = _dctDecompressor.Decompress(cbDctBlocks, _dctSize, compressedImage.Height / compressedImage.ThinIndex, compressedImage.Width / compressedImage.ThinIndex, _colorMatrixQuantification);
-            var thinnedCrChannel = _dctDecompressor.Decompress(crDctBlocks, _dctSize, compressedImage.Height / compressedImage.ThinIndex, compressedImage.Width / compressedImage.ThinIndex, _colorMatrixQuantification);
+            var yChannel = _dctDecompressor.Decompress(yDctBlocks, _dctSize, compressedImage.Height, compressedImage.Width, _lumiaMatrixProvider.GetMatrix());
+            var thinnedCbChannel = _dctDecompressor.Decompress(cbDctBlocks, _dctSize, compressedImage.Height / compressedImage.ThinIndex, compressedImage.Width / compressedImage.ThinIndex, _colorMatrixProvider.GetMatrix());
+            var thinnedCrChannel = _dctDecompressor.Decompress(crDctBlocks, _dctSize, compressedImage.Height / compressedImage.ThinIndex, compressedImage.Width / compressedImage.ThinIndex, _colorMatrixProvider.GetMatrix());
             var cbChannel = _pieceMatrixExtender.Extend(thinnedCbChannel, compressedImage.ThinIndex);
             var crChannel = _pieceMatrixExtender.Extend(thinnedCrChannel, compressedImage.ThinIndex);
             var yCbCrChannels = new YCbCrChannels(yChannel, cbChannel, crChannel);

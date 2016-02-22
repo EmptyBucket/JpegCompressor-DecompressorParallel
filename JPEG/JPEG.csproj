@@ -81,6 +81,7 @@
     <Compile Include="ChannelExtract\YCbCrChannels.cs" />
     <Compile Include="ChannelExtract\YCbCrChannelsExtractor.cs" />
     <Compile Include="ChannelPack\YCbCrChannelsPacker.cs" />
+    <Compile Include="QuantificationMatrixProvide\ColorQuantificationMatrixProvider.cs" />
     <Compile Include="CommandLineParse\ApplicationCommandLineParser.cs" />
     <Compile Include="CompressionAlgorithms\RLE.cs" />
     <Compile Include="DctCompress\DctCompressor.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="DctDecompress\IDctDecompressor.cs" />
     <Compile Include="ExtensionsMethods\ArrayExtensions.cs" />
     <Compile Include="ExtensionsMethods\DoubleToByteConverter.cs" />
+    <Compile Include="QuantificationMatrixProvide\IMatrixProvider.cs" />
     <Compile Include="JpegDecompress\IDecompressor.cs" />
     <Compile Include="JpegDecompress\JPegDecompressor.cs" />
     <Compile Include="CompressedImage.cs" />
@@ -97,8 +99,13 @@
     <Compile Include="CompressionAlgorithms\DCT.cs" />
     <Compile Include="BitmapBuild\BgrBitmapBuilder.cs" />
     <Compile Include="BitmapBuild\IBitmapBuilder.cs" />
+    <Compile Include="QuantificationMatrixProvide\LumiaQuantificationMatrixProvider.cs" />
     <Compile Include="MatrixExtend\LastValueMatrixExtender.cs" />
     <Compile Include="MatrixExtend\IMatrixExtender.cs" />
+    <Compile Include="ArrayToMatrixBuilder\IArrayToMatrixBuilder.cs" />
+    <Compile Include="MatrixToArrayTransform\IMatrixToArrayTransformer.cs" />
+    <Compile Include="ArrayToMatrixBuilder\ZigZagBuilder.cs" />
+    <Compile Include="MatrixToArrayTransform\ZigZagTransformer.cs" />
     <Compile Include="Quantification\IQuantifier.cs" />
     <Compile Include="PieceMatrixExtend\DuplicatePieceMatrixExtender.cs" />
     <Compile Include="PieceMatrixExtend\IPieceMatrixExtender.cs" />
