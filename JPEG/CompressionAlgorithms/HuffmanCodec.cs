@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JPEG.ExtensionsMethods;
 
@@ -12,11 +13,13 @@ namespace JPEG.CompressionAlgorithms
 		public HuffmanNode Right { get; set; }
 	}
 
+    [Serializable]
     internal class BitsWithLength
 	{
 		public int Bits { get; set; }
 		public int BitsCount { get; set; }
 
+        [Serializable]
 		public class Comparer : IEqualityComparer<BitsWithLength>
 		{
 			public bool Equals(BitsWithLength x, BitsWithLength y)

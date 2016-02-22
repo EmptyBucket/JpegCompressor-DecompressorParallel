@@ -82,6 +82,7 @@
     <Compile Include="ChannelExtract\YCbCrChannelsExtractor.cs" />
     <Compile Include="ChannelPack\YCbCrChannelsPacker.cs" />
     <Compile Include="CommandLineParse\ApplicationCommandLineParser.cs" />
+    <Compile Include="CompressionAlgorithms\RLE.cs" />
     <Compile Include="DctCompress\DctCompressor.cs" />
     <Compile Include="DctCompress\IDctCompressor.cs" />
     <Compile Include="DctDecompress\DctDecompressor.cs" />

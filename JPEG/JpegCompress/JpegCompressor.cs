@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using JPEG.ChannelExtract;
+using JPEG.CompressionAlgorithms;
 using JPEG.DctCompress;
 using JPEG.MatrixExtend;
 using JPEG.MatrixThin;
@@ -69,13 +70,20 @@ namespace JPEG.JpegCompress
                 result.AddRange(dctCrPieces[thinI]);
             }
 
+            var rle = RLE<byte>.Encode(result).ToArray();
+            Dictionary<BitsWithLength, byte> decodeTable;
+            long bitsCount;
+            var huf = HuffmanCodec.Encode(rle, out decodeTable, out bitsCount);
+
             var compressedImage = new CompressedImage
             {
                 ThinIndex = _thinIndex,
                 CompressionLevel = _compressionLevel,
-                Frequences = result,
+                DataBytes = huf,
                 Height = extendedPixelsMatrix.GetLength(0),
-                Width = extendedPixelsMatrix.GetLength(1)
+                Width = extendedPixelsMatrix.GetLength(1),
+                DecodeTable = decodeTable,
+                BitsCount = bitsCount
             };
             return compressedImage;
         }

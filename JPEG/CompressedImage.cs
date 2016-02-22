@@ -2,79 +2,122 @@ using System;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using JPEG.CompressionAlgorithms;
 
 namespace JPEG
 {
-	public class CompressedImage
-	{
-		public int Height { get; set; }
-		public int Width { get; set; }
+    public class CompressedImage
+    {
+        public int Height { get; set; }
+        public int Width { get; set; }
 
         public PixelFormat PixelFormat { get; set; }
 
-		public int CompressionLevel { get; set; }
+        public int CompressionLevel { get; set; }
 
-		public List<byte> Frequences { get; set; }
-	    public int ThinIndex { get; set; }
+        public byte[] DataBytes { get; set; }
+        public int ThinIndex { get; set; }
 
-	    public void Save(string path)
-		{
-			using(var sw = new FileStream(path, FileMode.Create))
-			{
-				var heightBytes = BitConverter.GetBytes(Height);
-				sw.Write(heightBytes, 0, 4);
+        public void Save(string path)
+        {
+            using (var sw = new FileStream(path, FileMode.Create))
+            {
+                var heightBytes = BitConverter.GetBytes(Height);
+                sw.Write(heightBytes, 0, 4);
 
-				var widthBytes = BitConverter.GetBytes(Width);
-				sw.Write(widthBytes, 0, 4);
+                var widthBytes = BitConverter.GetBytes(Width);
+                sw.Write(widthBytes, 0, 4);
 
-			    var pixelFormatBytes = BitConverter.GetBytes((int)PixelFormat);
-			    sw.Write(pixelFormatBytes, 0, 4);
+                var pixelFormatBytes = BitConverter.GetBytes((int)PixelFormat);
+                sw.Write(pixelFormatBytes, 0, 4);
 
-			    var thinIndexBytes = BitConverter.GetBytes(ThinIndex);
+                var thinIndexBytes = BitConverter.GetBytes(ThinIndex);
                 sw.Write(thinIndexBytes, 0, 4);
 
-				var compressionLevelBytes = BitConverter.GetBytes(CompressionLevel);
-				sw.Write(compressionLevelBytes, 0, 4);
+                var compressionLevelBytes = BitConverter.GetBytes(CompressionLevel);
+                sw.Write(compressionLevelBytes, 0, 4);
 
-			    foreach (var t in Frequences)
-			        sw.Write(new[] {t}, 0, 1);
-			}
-		}
+                var numberDataBytes = BitConverter.GetBytes(DataBytes.Length);
+                sw.Write(numberDataBytes, 0, 4);
 
-		public static CompressedImage Load(string path, int dctSize)
-		{
-			var result = new CompressedImage();
-			using(var sr = new FileStream(path, FileMode.Open))
-			{
-				var buffer = new byte[4];
+                foreach (var t in DataBytes)
+                    sw.Write(new[] { t }, 0, 1);
 
-				sr.Read(buffer, 0, 4);
-				result.Height = BitConverter.ToInt32(buffer, 0);
+                var bitsCount = BitConverter.GetBytes(BitsCount);
+                sw.Write(bitsCount, 0, 4);
 
-				sr.Read(buffer, 0, 4);
-				result.Width = BitConverter.ToInt32(buffer, 0);
+                var binFormatter = new BinaryFormatter();
+                var mStream = new MemoryStream();
+                binFormatter.Serialize(mStream, DecodeTable);
+                var bytesDecodeTable = mStream.ToArray();
 
-			    sr.Read(buffer, 0, 4);
-			    result.PixelFormat = (PixelFormat)BitConverter.ToInt32(buffer, 0);
+                var numberBytesDecodeTable = BitConverter.GetBytes(bytesDecodeTable.Length);
+                sw.Write(numberBytesDecodeTable, 0, 4);
+                sw.Write(bytesDecodeTable, 0, bytesDecodeTable.Length);
+            }
+        }
 
-			    sr.Read(buffer, 0, 4);
-			    result.ThinIndex = BitConverter.ToInt32(buffer, 0);
+        public static CompressedImage Load(string path, int dctSize)
+        {
+            var result = new CompressedImage();
+            using (var sr = new FileStream(path, FileMode.Open))
+            {
+                var buffer = new byte[4];
 
-				sr.Read(buffer, 0, 4);
-				result.CompressionLevel = BitConverter.ToInt32(buffer, 0);
+                sr.Read(buffer, 0, 4);
+                result.Height = BitConverter.ToInt32(buffer, 0);
 
-				var blocksLumia = result.Height * result.Width / (dctSize * dctSize);
-			    var blockColor = blocksLumia/(result.ThinIndex*result.ThinIndex);
-			    var countBlocks = (blocksLumia + blockColor*2)*result.CompressionLevel;
+                sr.Read(buffer, 0, 4);
+                result.Width = BitConverter.ToInt32(buffer, 0);
 
-                result.Frequences = new List<byte>();
-				for(var blockNum = 0; blockNum < countBlocks; blockNum++)
-				{
+                sr.Read(buffer, 0, 4);
+                result.PixelFormat = (PixelFormat)BitConverter.ToInt32(buffer, 0);
+
+                sr.Read(buffer, 0, 4);
+                result.ThinIndex = BitConverter.ToInt32(buffer, 0);
+
+                sr.Read(buffer, 0, 4);
+                result.CompressionLevel = BitConverter.ToInt32(buffer, 0);
+
+                //var blocksLumia = result.Height * result.Width / (dctSize * dctSize);
+                //   var blockColor = blocksLumia/(result.ThinIndex*result.ThinIndex);
+                //   var countBlocks = (blocksLumia + blockColor*2)*result.CompressionLevel;
+
+                sr.Read(buffer, 0, 4);
+                result.NumberDataBytes = BitConverter.ToInt32(buffer, 0);
+
+                var byteList = new List<byte>();
+                for (var blockNum = 0; blockNum < result.NumberDataBytes; blockNum++)
+                {
                     sr.Read(buffer, 0, 1);
-					result.Frequences.Add(buffer[0]);
-				}
-			}
-			return result;
-		}
-	}
+                    byteList.Add(buffer[0]);
+                }
+                result.DataBytes = byteList.ToArray();
+
+                sr.Read(buffer, 0, 4);
+                result.BitsCount = BitConverter.ToInt32(buffer, 0);
+
+                sr.Read(buffer, 0, 4);
+                var numberBytesDecodeTable = BitConverter.ToInt32(buffer, 0);
+
+                var bigBuffer = new byte[numberBytesDecodeTable];
+                sr.Read(bigBuffer, 0, numberBytesDecodeTable);
+
+                var mStream = new MemoryStream();
+                var binFormatter = new BinaryFormatter();
+
+                mStream.Write(bigBuffer, 0, bigBuffer.Length);
+                mStream.Position = 0;
+
+                var myObject = binFormatter.Deserialize(mStream) as Dictionary<BitsWithLength, byte>;
+                result.DecodeTable = myObject;
+            }
+            return result;
+        }
+
+        public int NumberDataBytes { get; set; }
+        internal Dictionary<BitsWithLength, byte> DecodeTable { get; set; }
+        public long BitsCount { get; set; }
+    }
 }

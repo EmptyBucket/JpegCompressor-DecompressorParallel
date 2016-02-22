@@ -5,6 +5,7 @@ using System.Linq;
 using JPEG.BitmapBuild;
 using JPEG.ChannelExtract;
 using JPEG.ChannelPack;
+using JPEG.CompressionAlgorithms;
 using JPEG.DctDecompress;
 using JPEG.MatrixExtend;
 using JPEG.Pixel;
@@ -40,19 +41,23 @@ namespace JPEG.JpegDecompress
 
         public Bitmap Decompress(CompressedImage compressedImage)
         {
+            var unHuf = HuffmanCodec.Decode(compressedImage.DataBytes, compressedImage.DecodeTable,
+                compressedImage.BitsCount);
+            var unRle = RLE<byte>.Decode(unHuf).ToArray();
+
             var yDct = new List<double>();
             var cbDct = new List<double>();
             var crDct = new List<double>();
             var countYBlocks = compressedImage.ThinIndex*compressedImage.ThinIndex;
             var cellsToBlock = compressedImage.CompressionLevel;
-            for (var i = 0; i < compressedImage.Frequences.Count;)
+            for (var i = 0; i < unRle.Length;)
             {
                 for (var j = 0; j < countYBlocks*cellsToBlock; j++)
-                    yDct.Add(compressedImage.Frequences[i++]);
+                    yDct.Add(unRle[i++]);
                 for (var j = 0; j < cellsToBlock; j++)
-                    cbDct.Add(compressedImage.Frequences[i++]);
+                    cbDct.Add(unRle[i++]);
                 for (var j = 0; j < cellsToBlock; j++)
-                    crDct.Add(compressedImage.Frequences[i++]);
+                    crDct.Add(unRle[i++]);
             }
 
             var yDctBlocks = DevideIntoPiece(yDct, compressedImage.CompressionLevel);
