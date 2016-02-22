@@ -1,4 +1,4 @@
-﻿namespace JPEG.MatrixExtend
+﻿namespace JPEG.PieceMatrixExtend
 {
     public interface IPieceMatrixExtender<T>
     {

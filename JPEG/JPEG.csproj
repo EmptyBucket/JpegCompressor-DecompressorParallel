@@ -87,6 +87,7 @@
     <Compile Include="DctCompress\IDctCompressor.cs" />
     <Compile Include="DctDecompress\DctDecompressor.cs" />
     <Compile Include="DctDecompress\IDctDecompressor.cs" />
+    <Compile Include="ExtensionsMethods\ArrayExtensions.cs" />
     <Compile Include="ExtensionsMethods\DoubleToByteConverter.cs" />
     <Compile Include="JpegDecompress\IDecompressor.cs" />
     <Compile Include="JpegDecompress\JPegDecompressor.cs" />
@@ -94,7 +95,7 @@
     <Compile Include="JpegCompress\ICompressor.cs" />
     <Compile Include="JpegCompress\JpegCompressor.cs" />
     <Compile Include="CompressionAlgorithms\DCT.cs" />
-    <Compile Include="BitmapBuild\BitmapBuilder.cs" />
+    <Compile Include="BitmapBuild\BgrBitmapBuilder.cs" />
     <Compile Include="BitmapBuild\IBitmapBuilder.cs" />
     <Compile Include="MatrixExtend\LastValueMatrixExtender.cs" />
     <Compile Include="MatrixExtend\IMatrixExtender.cs" />

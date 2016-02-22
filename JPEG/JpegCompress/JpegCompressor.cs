@@ -10,6 +10,7 @@ using JPEG.MatrixExtend;
 using JPEG.MatrixThin;
 using JPEG.Pixel;
 using JPEG.PixelsExtract;
+using NUnit.Framework.Compatibility;
 
 namespace JPEG.JpegCompress
 {
@@ -19,14 +20,14 @@ namespace JPEG.JpegCompress
         private readonly int _thinIndex;
         private readonly int _compressionLevel;
         private readonly int _dctSize;
-        private readonly IChannelsExtractor<YCbCrChannels> _channelExtractor;
+        private readonly IChannelsExtractor<YCbCrChannels, YCbCrPixel> _channelExtractor;
         private readonly IDctCompressor _dctCompressor;
         private readonly IPixelsExtractor<RgbPixel> _pixelsExtractor;
         private readonly IMatrixExtender _matrixExtender;
         private readonly double[,] _colorMatrixQuantification;
         private readonly double[,] _lumiaMatrixQuantification;
 
-        public JpegCompressor(IDctCompressor dctCompressor, IPixelsExtractor<RgbPixel> pixelsExtractor, IChannelsExtractor<YCbCrChannels> channelExtractor, IMatrixThinner<double> matrixThinner, int thinIndex, int compressionLevel, int dctSize, IMatrixExtender matrixExtender, double[,] lumiaMatrixQuantification, double[,] colorMatrixQuantification)
+        public JpegCompressor(IDctCompressor dctCompressor, IPixelsExtractor<RgbPixel> pixelsExtractor, IChannelsExtractor<YCbCrChannels, YCbCrPixel> channelExtractor, IMatrixThinner<double> matrixThinner, int thinIndex, int compressionLevel, int dctSize, IMatrixExtender matrixExtender, double[,] lumiaMatrixQuantification, double[,] colorMatrixQuantification)
         {
             _matrixThinner = matrixThinner; 
             _thinIndex = thinIndex;
@@ -70,10 +71,13 @@ namespace JPEG.JpegCompress
                 result.AddRange(dctCrPieces[thinI]);
             }
 
-            var rle = RLE<byte>.Encode(result).ToArray();
+            var rle = Rle<byte>.Encode(result).ToArray();
             Dictionary<BitsWithLength, byte> decodeTable;
             long bitsCount;
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             var huf = HuffmanCodec.Encode(rle, out decodeTable, out bitsCount);
+            Console.WriteLine(stopWatch.Elapsed);
 
             var compressedImage = new CompressedImage
             {

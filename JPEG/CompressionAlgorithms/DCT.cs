@@ -2,7 +2,7 @@
 
 namespace JPEG.CompressionAlgorithms
 {
-	public class Dct
+	public static class Dct
 	{
 		public static double[,] Dct2D(double[,] input)
 		{
@@ -10,23 +10,19 @@ namespace JPEG.CompressionAlgorithms
 			var width = input.GetLength(1);
 			var coeffs = new double[width, height];
 
-			for(var u = 0; u < width; u++)
-			{
-				for(var v = 0; v < height; v++)
-				{
-					var sum = 0d;
-					for(var x = 0; x < width; x++)
-					{
-						for(var y = 0; y < height; y++)
-						{
-							var a = input[x, y];
-							sum += BasisFunction(a, u, v, x, y, height, width);
-						}
-					}
-					coeffs[u, v] = sum * Beta(height, width) * Alpha(u) * Alpha(v);
-				}
-			}
-			return coeffs;
+		    for (var u = 0; u < width; u++)
+		        for (var v = 0; v < height; v++)
+		        {
+		            var sum = 0d;
+		            for (var x = 0; x < width; x++)
+		                for (var y = 0; y < height; y++)
+		                {
+		                    var a = input[x, y];
+		                    sum += BasisFunction(a, u, v, x, y, height, width);
+		                }
+		            coeffs[u, v] = sum*Beta(height, width)*Alpha(u)*Alpha(v);
+		        }
+		    return coeffs;
 		}
 
 		public static double[,] Idct2D(double[,] coeffs)
@@ -35,24 +31,20 @@ namespace JPEG.CompressionAlgorithms
 			var width = coeffs.GetLength(1);
 			var output = new double[width, height];
 
-			for(var x = 0; x < width; x++)
-			{
-				for(var y = 0; y < height; y++)
-				{
-					var sum = 0d;
+		    for (var x = 0; x < width; x++)
+		        for (var y = 0; y < height; y++)
+		        {
+		            var sum = 0d;
 
-					for(var u = 0; u < width; u++)
-					{
-						for(var v = 0; v < height; v++)
-						{
-							var a = coeffs[u, v];
-							sum += BasisFunction(a, u, v, x, y, height, width) * Alpha(u) * Alpha(v);
-						}
-					}
-					output[x, y] = sum * Beta(height, width);
-				}
-			}
-			return output;
+		            for (var u = 0; u < width; u++)
+		                for (var v = 0; v < height; v++)
+		                {
+		                    var a = coeffs[u, v];
+		                    sum += BasisFunction(a, u, v, x, y, height, width)*Alpha(u)*Alpha(v);
+		                }
+		            output[x, y] = sum*Beta(height, width);
+		        }
+		    return output;
 		}
 
 		public static double BasisFunction(double a, double u, double v, double x, double y, int height, int width)

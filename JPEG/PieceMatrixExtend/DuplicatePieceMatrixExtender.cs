@@ -1,6 +1,6 @@
 ﻿using JPEG.ExtensionsMethods;
 
-namespace JPEG.MatrixExtend
+namespace JPEG.PieceMatrixExtend
 {
     public class DuplicatePieceMatrixExtender<T> : IPieceMatrixExtender<T>
     {

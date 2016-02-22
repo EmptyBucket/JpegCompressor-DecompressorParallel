@@ -11,18 +11,12 @@ namespace JPEG.ExtensionsMethods
         {
             var height = matrix.GetLength(0);
             var width = matrix.GetLength(1);
-            var newMatrix = new double[height, width];
+            var shuftedValueMatrix = new double[height, width];
             for (var y = 0; y < height; y++)
                 for (var x = 0; x < width; x++)
-                    newMatrix[y,x] = matrix[y, x] + shiftValue;
-            return newMatrix;
+                    shuftedValueMatrix[y,x] = matrix[y, x] + shiftValue;
+            return shuftedValueMatrix;
         }
-
-        public static double[] ShiftArrayValue(this double[] array, double shiftValue) =>
-            array.Select(item => item + shiftValue).ToArray();
-
-        public static byte[] ShiftArrayValue(this byte[] array, int shiftValue) =>
-            array.Select(item => (byte)(item + shiftValue)).ToArray();
 
         public static void SetSubmatrix<T>(this T[,] destination, T[,] source, int yOffset, int xOffset)
         {
@@ -37,18 +31,18 @@ namespace JPEG.ExtensionsMethods
                     destination[yOffset + y, xOffset + x] = source[y, x];
         }
 
-        public static T[,] GetSubMatrix<T>(this T[,] array, int yOffset, int yLength, int xOffset, int xLength)
+        public static T[,] GetSubMatrix<T>(this T[,] matrix, int yOffset, int yLength, int xOffset, int xLength)
         {
             if(xLength < 0 || yLength < 0)
                 throw new Exception("Received a negative length");
             if(yOffset < 0 || xOffset < 0)
                 throw new Exception("Received a negative bias");
-            if(yOffset+yLength > array.Length || xOffset+xLength > array.Length)
+            if(yOffset+yLength > matrix.Length || xOffset+xLength > matrix.Length)
                 throw new Exception("Output sub-matrix of matrix");
             var result = new T[yLength, xLength];
             for (var j = 0; j < yLength; j++)
                 for (var i = 0; i < xLength; i++)
-                    result[j, i] = array[yOffset + j, xOffset + i];
+                    result[j, i] = matrix[yOffset + j, xOffset + i];
             return result;
         }
 
@@ -121,39 +115,6 @@ namespace JPEG.ExtensionsMethods
             listEnd.Reverse();
             var commonList = listStart.Concat(listEnd);
             return commonList.ToArray();
-        }
-
-        public static T[,] MatrixZigZagTurn<T>(this T[] array, int matrixLengthX, int matrixLengthY)
-        {
-            if (array.Length > matrixLengthX*matrixLengthY)
-                throw new Exception("Size of the matrix is less than the array size");
-            var matrix = new T[matrixLengthY, matrixLengthX];
-            var i = 0;
-            var j = 0;
-            var directionStep = -1;
-            var start = 0;
-            var end = matrixLengthX * matrixLengthY - 1;
-            do
-            {
-                matrix[i, j] = array[start++];
-                matrix[matrixLengthX - i - 1, matrixLengthX - j - 1] = array[end--];
-
-                i += directionStep;
-                j -= directionStep;
-                if (i < 0)
-                {
-                    i++;
-                    directionStep = -directionStep;
-                }
-                else if (j < 0)
-                {
-                    j++;
-                    directionStep = -directionStep;
-                }
-            } while (start < end);
-            if (start == end)
-                matrix[j, i] = array[start];
-            return matrix;
         }
     }
 }

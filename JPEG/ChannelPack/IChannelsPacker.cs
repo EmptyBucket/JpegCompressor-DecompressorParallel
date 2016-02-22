@@ -1,9 +1,7 @@
-﻿using JPEG.Pixel;
-
-namespace JPEG.ChannelPack
+﻿namespace JPEG.ChannelPack
 {
-    public interface IChannelsPacker<in T>
+    public interface IChannelsPacker<in TChannelsType, out TPixelType>
     {
-        YCbCrPixel[,] Pack(T yCbCrChannels, int sizeX, int sizeY);
+        TPixelType[,] Pack(TChannelsType yCbCrChannels, int sizeX, int sizeY);
     }
 }

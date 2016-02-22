@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace JPEG.CompressionAlgorithms
 {
-    static class RLE<T> where T : struct, IConvertible
+    internal static class Rle<T> where T : struct, IConvertible
     {
         private static T _rleMarker;
 

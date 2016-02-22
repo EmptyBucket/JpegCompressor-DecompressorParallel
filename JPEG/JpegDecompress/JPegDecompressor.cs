@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 using JPEG.BitmapBuild;
 using JPEG.ChannelExtract;
@@ -8,6 +7,7 @@ using JPEG.ChannelPack;
 using JPEG.CompressionAlgorithms;
 using JPEG.DctDecompress;
 using JPEG.MatrixExtend;
+using JPEG.PieceMatrixExtend;
 using JPEG.Pixel;
 
 namespace JPEG.JpegDecompress
@@ -19,10 +19,10 @@ namespace JPEG.JpegDecompress
         private readonly double[,] _lumiaMatrixQuantification;
         private readonly double[,] _colorMatrixQuantification;
         private readonly IPieceMatrixExtender<double> _pieceMatrixExtender;
-        private readonly IChannelsPacker<YCbCrChannels> _iChannelsPacker;
+        private readonly IChannelsPacker<YCbCrChannels, YCbCrPixel> _iChannelsPacker;
         private readonly IBitmapBuilder _bitmapBuilder;
 
-        public  JpegDecompressor(IDctDecompressor dctDecompressor, IBitmapBuilder bitmapBuilder, IChannelsPacker<YCbCrChannels> iChannelsPacker, IPieceMatrixExtender<double> pieceMatrixExtender, int dctSize, double[,] lumiaMatrixQuantification, double[,] colorMatrixQuantification)
+        public  JpegDecompressor(IDctDecompressor dctDecompressor, IBitmapBuilder bitmapBuilder, IChannelsPacker<YCbCrChannels, YCbCrPixel> iChannelsPacker, IPieceMatrixExtender<double> pieceMatrixExtender, int dctSize, double[,] lumiaMatrixQuantification, double[,] colorMatrixQuantification)
         {
             _dctDecompressor = dctDecompressor;
             _dctSize = dctSize;
@@ -43,7 +43,7 @@ namespace JPEG.JpegDecompress
         {
             var unHuf = HuffmanCodec.Decode(compressedImage.DataBytes, compressedImage.DecodeTable,
                 compressedImage.BitsCount);
-            var unRle = RLE<byte>.Decode(unHuf).ToArray();
+            var unRle = Rle<byte>.Decode(unHuf).ToArray();
 
             var yDct = new List<double>();
             var cbDct = new List<double>();
@@ -70,8 +70,8 @@ namespace JPEG.JpegDecompress
             var crChannel = _pieceMatrixExtender.Extend(thinnedCrChannel, compressedImage.ThinIndex);
             var yCbCrChannels = new YCbCrChannels(yChannel, cbChannel, crChannel);
             var yCbCrPixels = _iChannelsPacker.Pack(yCbCrChannels, compressedImage.Height, compressedImage.Width);
-            var rgbPixels = MatrixYCbCrToRgbConverter.Convert(yCbCrPixels);
-            var bmp = _bitmapBuilder.Build(rgbPixels, PixelFormat.Format24bppRgb);
+            var matrixRgbPixels = MatrixYCbCrToRgbConverter.Convert(yCbCrPixels);
+            var bmp = _bitmapBuilder.Build(matrixRgbPixels);
             return bmp;
         }
     }

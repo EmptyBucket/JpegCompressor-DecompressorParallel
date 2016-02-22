@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using JPEG.ExtensionsMethods;
 
 namespace JPEG.CompressionAlgorithms
@@ -142,12 +143,12 @@ namespace JPEG.CompressionAlgorithms
 			else
 			{
 			    if (node.Left == null) return;
-			    FillEncodeTable(node.Left, encodeSubstitutionTable, (bitvector << 1) + 1, depth + 1);
-			    FillEncodeTable(node.Right, encodeSubstitutionTable, (bitvector << 1) + 0, depth + 1);
-			}
+                FillEncodeTable(node.Left, encodeSubstitutionTable, (bitvector << 1) + 1, depth + 1);
+                FillEncodeTable(node.Right, encodeSubstitutionTable, (bitvector << 1) + 0, depth + 1);
+            }
 		}
 
-		private static HuffmanNode BuildHuffmanTree(int[] frequences)
+		private static HuffmanNode BuildHuffmanTree(IReadOnlyList<int> frequences)
 		{
 			var nodes = new HashSet<HuffmanNode>(Enumerable
                 .Range(0, byte.MaxValue + 1)
@@ -164,7 +165,7 @@ namespace JPEG.CompressionAlgorithms
 			return nodes.First();
 		}
 
-		private static int[] CalcFrequences(byte[] data)
+		private static int[] CalcFrequences(IReadOnlyCollection<byte> data)
 		{
 			var result = new int[byte.MaxValue + 1];
 			foreach(var b in data)

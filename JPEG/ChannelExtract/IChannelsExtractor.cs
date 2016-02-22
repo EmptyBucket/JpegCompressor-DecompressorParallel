@@ -1,9 +1,7 @@
-﻿using JPEG.Pixel;
-
-namespace JPEG.ChannelExtract
+﻿namespace JPEG.ChannelExtract
 {
-    public interface IChannelsExtractor<out T>
+    public interface IChannelsExtractor<out TChannelsType, in TPixelType>
     {
-        YCbCrChannels Extract(YCbCrPixel[,] pixels);
+        TChannelsType Extract(TPixelType[,] matrixPixels);
     }
 }
