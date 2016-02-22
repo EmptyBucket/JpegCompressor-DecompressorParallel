@@ -2,6 +2,6 @@
 {
     public interface IDctDecompressor
     {
-        double[,] Decompress(double[][] blocks, int dctSize, int imageHeight, int imageWidth);
+        double[,] Decompress(double[][] blocks, int dctSize, int imageHeight, int imageWidth, double[,] matrixQuantification);
     }
 }

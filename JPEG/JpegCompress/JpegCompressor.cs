@@ -21,14 +21,18 @@ namespace JPEG.JpegCompress
         private readonly IDctCompressor _dctCompressor;
         private readonly IPixelsExtractor<RgbPixel> _pixelsExtractor;
         private readonly IMatrixExtender _matrixExtender;
+        private readonly double[,] _colorMatrixQuantification;
+        private readonly double[,] _lumiaMatrixQuantification;
 
-        public JpegCompressor(IDctCompressor dctCompressor, IPixelsExtractor<RgbPixel> pixelsExtractor, IChannelsExtractor<YCbCrChannels> channelExtractor, IMatrixThinner<double> matrixThinner, int thinIndex, int compressionLevel, int dctSize, IMatrixExtender matrixExtender)
+        public JpegCompressor(IDctCompressor dctCompressor, IPixelsExtractor<RgbPixel> pixelsExtractor, IChannelsExtractor<YCbCrChannels> channelExtractor, IMatrixThinner<double> matrixThinner, int thinIndex, int compressionLevel, int dctSize, IMatrixExtender matrixExtender, double[,] lumiaMatrixQuantification, double[,] colorMatrixQuantification)
         {
             _matrixThinner = matrixThinner; 
             _thinIndex = thinIndex;
             _compressionLevel = compressionLevel;
             _dctSize = dctSize;
             _matrixExtender = matrixExtender;
+            _colorMatrixQuantification = colorMatrixQuantification;
+            _lumiaMatrixQuantification = lumiaMatrixQuantification;
             _channelExtractor = channelExtractor;
             _dctCompressor = dctCompressor;
             _pixelsExtractor = pixelsExtractor;
@@ -38,28 +42,30 @@ namespace JPEG.JpegCompress
         {
             if (bmp.PixelFormat != PixelFormat.Format24bppRgb)
                 throw new Exception($"{bmp.PixelFormat} pixel format is not supported, supported rgb24");
-            var pixels = _pixelsExtractor.Extract(bmp);
-            var convertedPixels = MatrixRgbToYCbCrConveter.Convert(pixels);
-            var residueY = bmp.Height%(_thinIndex*_dctSize);
-            var residueX = bmp.Width%(_thinIndex*_dctSize);
-            var extendedPixelsMatrix = _matrixExtender.Extend(convertedPixels, residueY == 0 ? 0 : _thinIndex*_dctSize - residueY, residueX == 0 ? 0 : _thinIndex*_dctSize - residueX);
+            var pixelsMatrix = _pixelsExtractor.Extract(bmp);
+            var converterPixelsMatrix = MatrixRgbToYCbCrConveter.Convert(pixelsMatrix);
+            var residueYPiece = bmp.Height%(_thinIndex*_dctSize);
+            var residueXPiece = bmp.Width%(_thinIndex*_dctSize);
+            var countAddYPiece = residueYPiece == 0 ? 0 : _thinIndex*_dctSize - residueYPiece;
+            var countAddXPiece = residueXPiece == 0 ? 0 : _thinIndex*_dctSize - residueXPiece;
+            var extendedPixelsMatrix = _matrixExtender.Extend(converterPixelsMatrix, countAddYPiece, countAddXPiece);
 
-            var channels = _channelExtractor.Extract(extendedPixelsMatrix);
-            var thinnedCrChannel = _matrixThinner.Thin(channels.CrChannel, _thinIndex);
-            var thinnedCbChannel = _matrixThinner.Thin(channels.CbChannel, _thinIndex);
+            var yCbCrchannels = _channelExtractor.Extract(extendedPixelsMatrix);
+            var thinnedCbChannel = _matrixThinner.Thin(yCbCrchannels.CbChannel, _thinIndex);
+            var thinnedCrChannel = _matrixThinner.Thin(yCbCrchannels.CrChannel, _thinIndex);
 
-            var yDct = _dctCompressor.Compress(channels.YChannel, _dctSize, _compressionLevel);
-            var cbDct = _dctCompressor.Compress(thinnedCbChannel, _dctSize, _compressionLevel);
-            var crDct = _dctCompressor.Compress(thinnedCrChannel, _dctSize, _compressionLevel);
+            var dctYPieces = _dctCompressor.Compress(yCbCrchannels.YChannel, _dctSize, _compressionLevel, _lumiaMatrixQuantification);
+            var dctCbPieces = _dctCompressor.Compress(thinnedCbChannel, _dctSize, _compressionLevel, _colorMatrixQuantification);
+            var dctCrPieces = _dctCompressor.Compress(thinnedCrChannel, _dctSize, _compressionLevel, _colorMatrixQuantification);
 
             var result = new List<double>();
-            var notThinnedStep = _thinIndex * _thinIndex;
-            for (int i = 0, thinI = 0; i < yDct.Length; thinI++)
+            var countYBlocksPerColorBlock = _thinIndex * _thinIndex;
+            for (int i = 0, thinI = 0; i < dctYPieces.Length; thinI++)
             {
-                for (var j = 0; j < notThinnedStep; j++)
-                    result.AddRange(yDct[i++]);
-                result.AddRange(cbDct[thinI]);
-                result.AddRange(crDct[thinI]);
+                for (var j = 0; j < countYBlocksPerColorBlock; j++)
+                    result.AddRange(dctYPieces[i++]);
+                result.AddRange(dctCbPieces[thinI]);
+                result.AddRange(dctCrPieces[thinI]);
             }
 
             var compressedImage = new CompressedImage

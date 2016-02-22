@@ -2,6 +2,6 @@
 {
     public interface IDctCompressor
     {
-        double[][] Compress(double[,] matrix, int dctSize, int compressionLevel);
+        double[][] Compress(double[,] matrix, int dctSize, int compressionLevel, double[,] matrixQuantification);
     }
 }

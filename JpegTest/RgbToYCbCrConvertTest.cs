@@ -18,7 +18,7 @@ namespace JpegTest
         [TestMethod]
         public void Rgb_ConvertToYCbCrAndBack_SameResult()
         {
-            var rgb = new RgbPixel(41, 71, 101);
+            var rgb = new RgbPixel(50, 150, 255);
             var yCbCr = RgbToYCbCrConverter.Convert(rgb);
             var newRgb = YCbCrToRgbConverter.Convert(yCbCr);
         }

@@ -34,7 +34,8 @@ namespace JPEG
             //{
             const int thinIndex = 2;
             var countSaveFrequence = PercentToCountFrequence(options.PercentCompress, options.Dct);
-            var kernelApplication = new StandardKernel(new ApplicationModule(options.Dct, countSaveFrequence, thinIndex));
+            var applicationModule = new ApplicationModule(options.Dct, countSaveFrequence, thinIndex);
+            var kernelApplication = new StandardKernel(applicationModule);
             if (options.PathCompressFile != null)
             {
                 var jpegCompressor = kernelApplication.Get<ICompressor>();

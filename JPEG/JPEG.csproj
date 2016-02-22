@@ -96,6 +96,7 @@
     <Compile Include="BitmapBuild\IBitmapBuilder.cs" />
     <Compile Include="MatrixExtend\LastValueMatrixExtender.cs" />
     <Compile Include="MatrixExtend\IMatrixExtender.cs" />
+    <Compile Include="Quantification\IQuantifier.cs" />
     <Compile Include="PieceMatrixExtend\DuplicatePieceMatrixExtender.cs" />
     <Compile Include="PieceMatrixExtend\IPieceMatrixExtender.cs" />
     <Compile Include="ExtensionsMethods\BitsCountConverter.cs" />
@@ -124,6 +125,7 @@
     </Compile>
     <Compile Include="MatrixThin\AvgMatrixThinner.cs" />
     <Compile Include="MatrixThin\IMatrixThinner.cs" />
+    <Compile Include="Quantification\Quantifier.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
