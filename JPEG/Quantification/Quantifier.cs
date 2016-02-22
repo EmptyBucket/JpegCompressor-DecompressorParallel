@@ -1,4 +1,5 @@
 ﻿using System;
+using JPEG.ExtensionsMethods;
 
 namespace JPEG.Quantification
 {

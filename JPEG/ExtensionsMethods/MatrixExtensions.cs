@@ -7,7 +7,7 @@ namespace JPEG.ExtensionsMethods
 {
     public static class MatrixExtensions
     {
-        public static double[,] ShiftMatrixValues(this double[,] matrix, int shiftValue)
+        public static double[,] ShiftMatrixValues(this double[,] matrix, double shiftValue)
         {
             var height = matrix.GetLength(0);
             var width = matrix.GetLength(1);
@@ -17,6 +17,12 @@ namespace JPEG.ExtensionsMethods
                     newMatrix[y,x] = matrix[y, x] + shiftValue;
             return newMatrix;
         }
+
+        public static double[] ShiftArrayValue(this double[] array, double shiftValue) =>
+            array.Select(item => item + shiftValue).ToArray();
+
+        public static byte[] ShiftArrayValue(this byte[] array, int shiftValue) =>
+            array.Select(item => (byte)(item + shiftValue)).ToArray();
 
         public static void SetSubmatrix<T>(this T[,] destination, T[,] source, int yOffset, int xOffset)
         {

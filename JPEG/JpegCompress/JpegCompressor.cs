@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using JPEG.ChannelExtract;
 using JPEG.DctCompress;
 using JPEG.MatrixExtend;
@@ -58,7 +59,7 @@ namespace JPEG.JpegCompress
             var dctCbPieces = _dctCompressor.Compress(thinnedCbChannel, _dctSize, _compressionLevel, _colorMatrixQuantification);
             var dctCrPieces = _dctCompressor.Compress(thinnedCrChannel, _dctSize, _compressionLevel, _colorMatrixQuantification);
 
-            var result = new List<double>();
+            var result = new List<byte>();
             var countYBlocksPerColorBlock = _thinIndex * _thinIndex;
             for (int i = 0, thinI = 0; i < dctYPieces.Length; thinI++)
             {

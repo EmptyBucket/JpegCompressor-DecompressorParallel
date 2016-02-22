@@ -86,6 +86,7 @@
     <Compile Include="DctCompress\IDctCompressor.cs" />
     <Compile Include="DctDecompress\DctDecompressor.cs" />
     <Compile Include="DctDecompress\IDctDecompressor.cs" />
+    <Compile Include="ExtensionsMethods\DoubleToByteConverter.cs" />
     <Compile Include="JpegDecompress\IDecompressor.cs" />
     <Compile Include="JpegDecompress\JPegDecompressor.cs" />
     <Compile Include="CompressedImage.cs" />

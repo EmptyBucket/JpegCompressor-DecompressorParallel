@@ -14,7 +14,7 @@ namespace JPEG
 
 		public int CompressionLevel { get; set; }
 
-		public List<double> Frequences { get; set; }
+		public List<byte> Frequences { get; set; }
 	    public int ThinIndex { get; set; }
 
 	    public void Save(string path)
@@ -36,11 +36,8 @@ namespace JPEG
 				var compressionLevelBytes = BitConverter.GetBytes(CompressionLevel);
 				sw.Write(compressionLevelBytes, 0, 4);
 
-				foreach (var t in Frequences)
-				{
-				    var portion = BitConverter.GetBytes((short)t);
-				    sw.Write(portion, 0, portion.Length);
-				}
+			    foreach (var t in Frequences)
+			        sw.Write(new[] {t}, 0, 1);
 			}
 		}
 
@@ -70,12 +67,11 @@ namespace JPEG
 			    var blockColor = blocksLumia/(result.ThinIndex*result.ThinIndex);
 			    var countBlocks = (blocksLumia + blockColor*2)*result.CompressionLevel;
 
-                result.Frequences = new List<double>();
-
+                result.Frequences = new List<byte>();
 				for(var blockNum = 0; blockNum < countBlocks; blockNum++)
 				{
-                    sr.Read(buffer, 0, 2);
-					result.Frequences.Add(BitConverter.ToInt16(buffer, 0));
+                    sr.Read(buffer, 0, 1);
+					result.Frequences.Add(buffer[0]);
 				}
 			}
 			return result;

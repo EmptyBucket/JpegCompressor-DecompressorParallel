@@ -9,7 +9,7 @@ namespace JPEG.DctDecompress
     public class DctDecompressor : IDctDecompressor
     {
         private readonly IQuantifier _quantifier;
-        private const int ShiftIndes = 128;
+        private const int ShiftIndex = -128;
 
         public DctDecompressor(IQuantifier quantifier)
         {
@@ -26,14 +26,12 @@ namespace JPEG.DctDecompress
                 .AsParallel()
                 .Select(block =>
                 {
-                    var additionBlock = AdditionBlock(block, dctSize*dctSize - block.Length);
-                    var matrix = additionBlock
-                        .MatrixZigZagTurn(dctSize, dctSize);
+                    var blockShiftValue = block.ShiftArrayValue(ShiftIndex);
+                    var additionBlock = AdditionBlock(blockShiftValue, dctSize*dctSize - block.Length);
+                    var matrix = additionBlock.MatrixZigZagTurn(dctSize, dctSize);
                     var unQuantifiedMatrix = _quantifier.UnQuantification(matrix, matrixQuantification);
                     var unDctMatrix = Dct.Idct2D(unQuantifiedMatrix);
-                    var shiftedMatrix = unDctMatrix
-                        .ShiftMatrixValues(ShiftIndes);
-                    return shiftedMatrix;
+                    return unDctMatrix;
                 })
                 .ToArray()
                 .MatrixBuildFromBlocks(imageHeight, imageWidth);
