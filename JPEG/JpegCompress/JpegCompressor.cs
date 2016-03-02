@@ -75,10 +75,7 @@ namespace JPEG.JpegCompress
             var rle = Rle<byte>.Encode(result).ToArray();
             Dictionary<BitsWithLength, byte> decodeTable;
             long bitsCount;
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
             var huf = HuffmanCodec.Encode(rle, out decodeTable, out bitsCount);
-            Console.WriteLine(stopWatch.Elapsed);
 
             var compressedImage = new CompressedImage
             {

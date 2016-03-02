@@ -41,8 +41,7 @@ namespace JPEG.JpegDecompress
 
         public Bitmap Decompress(CompressedImage compressedImage)
         {
-            var unHuf = HuffmanCodec.Decode(compressedImage.DataBytes, compressedImage.DecodeTable,
-                compressedImage.BitsCount);
+            var unHuf = HuffmanCodec.Decode(compressedImage.DataBytes, compressedImage.DecodeTable, compressedImage.BitsCount);
             var unRle = Rle<byte>.Decode(unHuf).ToArray();
 
             var yDct = new List<double>();

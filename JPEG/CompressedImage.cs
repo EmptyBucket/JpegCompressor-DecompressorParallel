@@ -41,8 +41,7 @@ namespace JPEG
                 var numberDataBytes = BitConverter.GetBytes(DataBytes.Length);
                 sw.Write(numberDataBytes, 0, 4);
 
-                foreach (var t in DataBytes)
-                    sw.Write(new[] { t }, 0, 1);
+                sw.Write(DataBytes, 0, DataBytes.Length);
 
                 var bitsCount = BitConverter.GetBytes(BitsCount);
                 sw.Write(bitsCount, 0, 4);
@@ -80,10 +79,6 @@ namespace JPEG
                 sr.Read(buffer, 0, 4);
                 result.CompressionLevel = BitConverter.ToInt32(buffer, 0);
 
-                //var blocksLumia = result.Height * result.Width / (dctSize * dctSize);
-                //   var blockColor = blocksLumia/(result.ThinIndex*result.ThinIndex);
-                //   var countBlocks = (blocksLumia + blockColor*2)*result.CompressionLevel;
-
                 sr.Read(buffer, 0, 4);
                 result.NumberDataBytes = BitConverter.ToInt32(buffer, 0);
 
@@ -115,7 +110,6 @@ namespace JPEG
             }
             return result;
         }
-
         public int NumberDataBytes { get; set; }
         internal Dictionary<BitsWithLength, byte> DecodeTable { get; set; }
         public long BitsCount { get; set; }

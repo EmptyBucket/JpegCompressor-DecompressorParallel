@@ -24,6 +24,7 @@ namespace JPEG.DctCompress
             var dctBlocks = matrix
                 .DevideIntoBlocks(dctSize, dctSize)
                 .AsParallel()
+                .AsOrdered()
                 .Select(block =>
                 {
                     var dctMatrix = Dct.Dct2D(block);
@@ -32,8 +33,8 @@ namespace JPEG.DctCompress
                     var blockShiftValue = transformedMatrix
                         .Take(compressionLevel)
                         .Select(shiftBlock => (byte)Math.Round(shiftBlock))
-                        .ToArray()
-                        .ShiftArrayValue(ShiftIndex);
+                        .ShiftArrayValue(ShiftIndex)
+                        .ToArray();
                     return blockShiftValue;
                 })
                 .ToArray();

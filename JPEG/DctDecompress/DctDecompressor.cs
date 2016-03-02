@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using JPEG.ArrayToMatrixBuilder;
 using JPEG.CompressionAlgorithms;
 using JPEG.ExtensionsMethods;
-using JPEG.MatrixToArrayTransform;
 using JPEG.Quantification;
 
 namespace JPEG.DctDecompress
@@ -20,7 +21,7 @@ namespace JPEG.DctDecompress
             _arrayToMatrixBuilder = arrayToMatrixBuilder;
         }
 
-        private static T[] AdditionBlock<T>(IReadOnlyCollection<T> block, int countAddValue) => block
+        private static T[] AdditionBlock<T>(IEnumerable<T> block, int countAddValue) => block
             .Concat(Enumerable.Repeat(default(T), countAddValue))
             .ToArray();
 
@@ -28,8 +29,10 @@ namespace JPEG.DctDecompress
         {
             var result = blocks
                 .AsParallel()
-                .Select(block =>
+                .AsOrdered()
+                .Select((block, index) =>
                 {
+                    Console.WriteLine(Thread.CurrentThread.ManagedThreadId + " " + index);
                     var blockShiftValue = block.ShiftArrayValue(ShiftIndex);
                     var additionBlock = AdditionBlock(blockShiftValue, dctSize*dctSize - block.Length);
                     var matrix = _arrayToMatrixBuilder.Build(additionBlock, dctSize, dctSize);

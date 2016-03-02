@@ -1,9 +1,12 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Threading;
 using JPEG.CommandLineParse;
 using JPEG.JpegCompress;
 using JPEG.JpegDecompress;
+using JPEG.MatrixToArrayTransform;
 using JPEG.Modules;
 using Ninject;
 
